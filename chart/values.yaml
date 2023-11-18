@@ -1,12 +1,19 @@
-namespace: default
+environment: test
 
-config:
-  database:
-    name: polls
+database:
+  mysql:
+    serviceName: mysql-database
+    replicaCount: 1
+    imageRepository: mysql
+    imageTag: 5.6
+    port: 3306
+    storageName: mysql-persistent-storage
+    storageAmmount: 500Mi
 
 #Base64 encoded value. Use command base64 for encoding/decoding secrets.
 secret:
   database:
-    rootPassword: Y2hhbmdlbWUK
-    userUsername: Y2hhbmdlbWUK
-    userPassword: Y2hhbmdlbWUK
+    mysql:
+      rootPassword: Y2hhbmdlbWUK
+      userUsername: Y2hhbmdlbWUK
+      userPassword: Y2hhbmdlbWUK
