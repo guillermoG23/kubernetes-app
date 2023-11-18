@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mysql-database
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: polls
+spec:
+  selector:
+    matchLabels:
+      role: database
+      app: polls
+  serviceName: {{ .Values.database.mysql.serviceName }}
+  replicas: {{ .Values.database.mysql.replicaCount }}
+  minReadySeconds: 10
+  template:
+    metadata:
+      labels:
+        role: database
+        app: polls
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mysql
+        image: {{ .Values.database.mysql.imageRepository}}:{{ .Values.database.mysql.imageTag }}
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-database-root
+                key: password
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-database-user
+                key: username
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-database-user
+                key: password
+          - name: MYSQL_DATABASE
+            value: polls
+        ports:
+        - containerPort: {{ .Values.database.mysql.port}}
+          name: mysql
+        volumeMounts:
+        - name: mysql
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Release.Name }}-local-storage
+      resources:
+        requests:
+          storage: {{ .Values.database.mysql.storageAmmount }}
