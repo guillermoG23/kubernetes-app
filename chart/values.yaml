@@ -1,0 +1,12 @@
+namespace: default
+
+config:
+  database:
+    name: polls
+
+#Base64 encoded value. Use command base64 for encoding/decoding secrets.
+secret:
+  database:
+    rootPassword: Y2hhbmdlbWUK
+    userUsername: Y2hhbmdlbWUK
+    userPassword: Y2hhbmdlbWUK
