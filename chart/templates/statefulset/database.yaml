@@ -6,12 +6,12 @@ metadata:
     release-name: {{ .Release.Name }}
     release-namespace: {{ .Release.Namespace }}
     environment: {{ .Values.environment }}
-    app: polls
+    app: {{ .Values.app.name }}
 spec:
   selector:
     matchLabels:
       role: database
-      app: polls
+      app: {{ .Values.app.name }}
       release: {{ .Release.Name }}
   serviceName: {{ .Values.database.mysql.serviceName }}
   replicas: {{ .Values.database.mysql.replicaCount }}
@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         role: database
-        app: polls
+        app: {{ .Values.app.name }}
         release: {{ .Release.Name }}
     spec:
       terminationGracePeriodSeconds: 10
@@ -44,13 +44,15 @@ spec:
                 name: {{ .Release.Name }}-mysql-database-user
                 key: password
           - name: MYSQL_DATABASE
-            value: polls
+            value: {{ .Values.database.mysql.dbName }}
         ports:
-        - containerPort: {{ .Values.database.mysql.port}}
+        - containerPort: {{ .Values.service.database.internalPort }}
           name: mysql
         volumeMounts:
         - name: mysql
           mountPath: /var/lib/mysql
+        resources:
+{{ toYaml .Values.app.backend.resources | indent 12 }}
   volumeClaimTemplates:
   - metadata:
       name: mysql

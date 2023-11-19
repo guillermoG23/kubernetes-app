@@ -6,12 +6,12 @@ metadata:
     release-name: {{ .Release.Name }}
     release-namespace: {{ .Release.Namespace }}
     environment: {{ .Values.environment }}
-    app: polls
+    app: {{ .Values.app.name }}
 spec:
   selector:
     matchLabels:
       role: frontend
-      app: polls
+      app: {{ .Values.app.name }}
       release: {{ .Release.Name }}
   strategy:
     type: RollingUpdate
@@ -23,7 +23,7 @@ spec:
     metadata:
       labels:
         role: frontend
-        app: polls
+        app: {{ .Values.app.name }}
         release: {{ .Release.Name }}
     spec:
       containers:
@@ -32,9 +32,9 @@ spec:
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.app.frontend.port }}
+              containerPort: {{ .Values.service.frontend.internalPort }}
           resources:
 {{ toYaml .Values.app.frontend.resources | indent 12 }}
-        #   env:
-        #     - name: NODE_APP_URL
-        #       value: TODO: Set this value
+          env:
+            - name: NODE_APP_URL
+              value: http://{{ .Release.Name }}-springboot-backend:{{ .Values.service.backend.internalPort }}/api

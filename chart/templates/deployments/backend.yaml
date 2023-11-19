@@ -32,21 +32,19 @@ spec:
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.app.backend.port }}
+              containerPort: {{ .Values.service.backend.internalPort }}
           resources:
 {{ toYaml .Values.app.backend.resources | indent 12 }}
           env:
             - name: SPRING_DATASOURCE_USERNAME
-              #value: changeme
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-mysql-database-user
                   key: username
             - name: SPRING_DATASOURCE_PASSWORD
-              #value: changeme
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-mysql-database-user
                   key: password
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://{{ .Release.Name }}-mysql-database:{{ .Values.services.database.internalPort }}/{{ .Values.database.mysql.dbName }}?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+              value: jdbc:mysql://{{ .Release.Name }}-mysql-database:{{ .Values.service.database.internalPort }}/{{ .Values.database.mysql.dbName }}?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
