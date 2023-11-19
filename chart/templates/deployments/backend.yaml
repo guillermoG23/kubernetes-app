@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-springboot-backend
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  selector:
+    matchLabels:
+      role: backend
+      app: {{ .Values.app.name }}
+      release: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+  replicas: {{ .Values.app.backend.replicaCount }}
+  template:
+    metadata:
+      labels:
+        role: backend
+        app: {{ .Values.app.name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: springboot-backend
+          image: {{ .Values.app.backend.imageRepository}}:{{ .Values.app.backend.imageTag }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.backend.port }}
+          resources:
+{{ toYaml .Values.app.backend.resources | indent 12 }}
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              #value: changeme
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-mysql-database-user
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              #value: changeme
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-mysql-database-user
+                  key: password
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://{{ .Release.Name }}-mysql-database:{{ .Values.services.database.internalPort }}/{{ .Values.database.mysql.dbName }}?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
