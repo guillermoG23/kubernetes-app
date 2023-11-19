@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-react-frontend
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: polls
+spec:
+  selector:
+    matchLabels:
+      role: frontend
+      app: polls
+      release: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+  replicas: {{ .Values.app.frontend.replicaCount }}
+  template:
+    metadata:
+      labels:
+        role: frontend
+        app: polls
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: react-frontend
+          image: {{ .Values.app.frontend.imageRepository}}:{{ .Values.app.frontend.imageTag }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.frontend.port }}
+          resources:
+{{ toYaml .Values.app.frontend.resources | indent 12 }}
+        #   env:
+        #     - name: NODE_APP_URL
+        #       value: TODO: Set this value

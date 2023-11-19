@@ -1,4 +1,19 @@
 environment: test
+pullPolicy: IfNotPresent
+rollingUpdate:
+  maxUnavailable: 1
+  maxSurge: 1
+
+app:
+  frontend:
+    imageRepository: frontend
+    imageTag: v2
+    port: 80
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 2
+        memory: "300Mi"
 
 database:
   mysql:
@@ -9,6 +24,10 @@ database:
     port: 3306
     storageName: mysql-persistent-storage
     storageAmmount: 500Mi
+    resources:
+      limits:
+        cpu: 1
+        memory: "200Mi"
 
 #Base64 encoded value. Use command base64 for encoding/decoding secrets.
 secret:
