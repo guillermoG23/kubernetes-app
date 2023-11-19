@@ -12,6 +12,7 @@ spec:
     matchLabels:
       role: database
       app: polls
+      release: {{ .Release.Name }}
   serviceName: {{ .Values.database.mysql.serviceName }}
   replicas: {{ .Values.database.mysql.replicaCount }}
   minReadySeconds: 10
@@ -20,6 +21,7 @@ spec:
       labels:
         role: database
         app: polls
+        release: {{ .Release.Name }}
     spec:
       terminationGracePeriodSeconds: 10
       containers:
