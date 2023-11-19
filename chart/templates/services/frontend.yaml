@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-react-frontend
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: {{ .Values.service.frontend.externalPort }}
+    targetPort: {{ .Values.service.frontend.internalPort }}
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    role: frontend
+    app: {{ .Values.app.name }}
+    release: {{ .Release.Name }}

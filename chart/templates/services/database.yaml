@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql-database
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  ports:
+  - name: mysql
+    protocol: TCP
+    port: {{ .Values.service.database.externalPort }}
+    targetPort: {{ .Values.service.database.internalPort }}
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    role: database
+    app: {{ .Values.app.name }}
+    release: {{ .Release.Name }}

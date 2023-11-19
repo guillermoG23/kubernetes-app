@@ -9,7 +9,7 @@ app:
   frontend:
     imageRepository: frontend
     imageTag: v2
-    replicaCount: 2
+    replicaCount: 1
     resources:
       limits:
         cpu: 1
@@ -17,7 +17,7 @@ app:
   backend:
     imageRepository: backend
     imageTag: v2
-    replicaCount: 2
+    replicaCount: 1
     resources:
       limits:
         cpu: 1
@@ -36,6 +36,17 @@ database:
       limits:
         cpu: 1
         memory: "200Mi"
+
+service:
+  database:
+    internalPort: 3306
+    externalPort: 3306
+  frontend:
+    internalPort: 80
+    externalPort: 80
+  backend:
+    internalPort: 8080
+    externalPort: 8080
 
 #Base64 encoded value. Use command base64 for encoding/decoding secrets.
 #For encoding: echo -n 'textplain-secret' | base64
