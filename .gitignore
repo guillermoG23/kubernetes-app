@@ -1,1 +1,3 @@
 *.vscode
+Chart.lock
+chart/charts/*.tgz

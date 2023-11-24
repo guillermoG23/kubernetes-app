@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress-nginx
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: polls.example
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-react-frontend
+                port:
+                  number: {{ .Values.service.frontend.externalPort }}
+          - path: /api
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Name }}-springboot-backend
+                port:
+                  number: {{ .Values.service.backend.externalPort }}
