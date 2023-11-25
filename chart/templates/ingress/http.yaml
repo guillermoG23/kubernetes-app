@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: polls.example
+    - host: {{ .Values.app.dnsName }}
       http:
         paths:
           - path: /
