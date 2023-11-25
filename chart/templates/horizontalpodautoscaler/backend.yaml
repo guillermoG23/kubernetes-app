@@ -1,0 +1,17 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-springboot-backend
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-springboot-backend
+  minReplicas: {{ .Values.app.backend.replicaCount }}
+  maxReplicas: {{ .Values.app.backend.autoscaling.maxReplicas }}
+  targetCPUUtilizationPercentage: {{ .Values.app.backend.autoscaling.cpuAveragePercentageUtilization }}

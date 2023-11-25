@@ -1,0 +1,17 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-react-frontend
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-react-frontend
+  minReplicas: {{ .Values.app.frontend.replicaCount }}
+  maxReplicas: {{ .Values.app.frontend.autoscaling.maxReplicas }}
+  targetCPUUtilizationPercentage: {{ .Values.app.frontend.autoscaling.cpuAveragePercentageUtilization }}

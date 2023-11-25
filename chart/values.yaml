@@ -8,22 +8,35 @@ rollingUpdate:
 
 app:
   name: polls
+  dnsName: polls.example
   frontend:
     imageRepository: frontend
     imageTag: v2
     replicaCount: 1
     resources:
       limits:
+        cpu: 2
+        memory: "700Mi"
+      requests:
         cpu: 1
         memory: "300Mi"
+    autoscaling:
+      maxReplicas: 5
+      cpuAveragePercentageUtilization: 60
   backend:
     imageRepository: backend
     imageTag: v2
     replicaCount: 1
     resources:
       limits:
+        cpu: 2
+        memory: "1000Mi"
+      requests:
         cpu: 1
         memory: "500Mi"
+    autoscaling:
+      maxReplicas: 5
+      cpuAveragePercentageUtilization: 60
   init:
     imageRepository: busybox
     imageTag: 1.28
@@ -39,6 +52,9 @@ database:
     dbName: polls
     resources:
       limits:
+        cpu: 2
+        memory: "1000Mi"
+      requests:
         cpu: 1
         memory: "500Mi"
 
@@ -62,3 +78,7 @@ secret:
       rootPassword: Y2hhbmdlbWU=
       userUsername: Y2hhbmdlbWU=
       userPassword: Y2hhbmdlbWU=
+
+metrics-server:
+  args:
+    - "--kubelet-insecure-tls"
