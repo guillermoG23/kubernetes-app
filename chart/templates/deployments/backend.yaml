@@ -33,6 +33,22 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.service.backend.internalPort }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.backend.internalPort }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.backend.internalPort }}
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
           resources:
 {{ toYaml .Values.app.backend.resources | indent 12 }}
           env:
