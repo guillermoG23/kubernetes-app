@@ -51,8 +51,32 @@ spec:
         volumeMounts:
         - name: mysql
           mountPath: /var/lib/mysql
+        livenessProbe:
+          exec:
+            command:
+              - bash 
+              - "-c"
+              - |
+                mysqladmin --user root -p${MYSQL_ROOT_PASSWORD} ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+              - bash 
+              - "-c" 
+              - | 
+                mysql --user root -p${MYSQL_ROOT_PASSWORD} --execute 'SELECT 1' --database ${MYSQL_DATABASE} --host 127.0.0.1
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
         resources:
-{{ toYaml .Values.app.backend.resources | indent 12 }}
+{{ toYaml .Values.database.mysql.resources | indent 12 }}
   volumeClaimTemplates:
   - metadata:
       name: mysql
