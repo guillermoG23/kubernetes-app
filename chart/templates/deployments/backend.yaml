@@ -26,6 +26,11 @@ spec:
         app: {{ .Values.app.name }}
         release: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: init-springboot-backend
+          image: {{ .Values.app.init.imageRepository}}:{{ .Values.app.init.imageTag }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ['sh', '-c', "until nslookup {{ .Release.Name }}-mysql-database; do echo waiting for database service; sleep 2; done"]
       containers:
         - name: springboot-backend
           image: {{ .Values.app.backend.imageRepository}}:{{ .Values.app.backend.imageTag }}

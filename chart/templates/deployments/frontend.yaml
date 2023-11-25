@@ -26,6 +26,11 @@ spec:
         app: {{ .Values.app.name }}
         release: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: init-rect-frontent
+          image: {{ .Values.app.init.imageRepository}}:{{ .Values.app.init.imageTag }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ['sh', '-c', "until nslookup {{ .Release.Name }}-springboot-backend; do echo waiting for backend service; sleep 2; done"]
       containers:
         - name: react-frontend
           image: {{ .Values.app.frontend.imageRepository}}:{{ .Values.app.frontend.imageTag }}

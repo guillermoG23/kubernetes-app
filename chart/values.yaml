@@ -1,5 +1,7 @@
 environment: test
+
 pullPolicy: IfNotPresent
+
 rollingUpdate:
   maxUnavailable: 1
   maxSurge: 1
@@ -13,7 +15,7 @@ app:
     resources:
       limits:
         cpu: 1
-        memory: "100Mi"
+        memory: "300Mi"
   backend:
     imageRepository: backend
     imageTag: v2
@@ -22,6 +24,9 @@ app:
       limits:
         cpu: 1
         memory: "500Mi"
+  init:
+    imageRepository: busybox
+    imageTag: 1.28
 
 database:
   mysql:
@@ -35,7 +40,7 @@ database:
     resources:
       limits:
         cpu: 1
-        memory: "200Mi"
+        memory: "500Mi"
 
 service:
   database:
