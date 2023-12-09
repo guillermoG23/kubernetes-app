@@ -42,10 +42,10 @@ app:
       maxReplicas: 2 #Maximum number of replicas for backend autoscaling
       cpuAveragePercentageUtilization: 60 #Percentage of CPU usage which, if exceeded, auto-scaling is applied to the backend
     livenessProbe:
-      initialDelaySeconds: 60 #250 #Number of seconds to wait before starting the first liveness probe for the backend
+      initialDelaySeconds: 250 #Number of seconds to wait before starting the first liveness probe for the backend
       periodSeconds: 10 #Number of seconds to wait before performing a new liveness probe for the backend
     readinessProbe:
-      initialDelaySeconds: 60 #300 #Number of seconds to wait before starting the first readiness probe for the backend
+      initialDelaySeconds: 300 #Number of seconds to wait before starting the first readiness probe for the backend
       periodSeconds: 10 #Number of seconds to wait before performing a new readiness probe for the backend
   init:
     busybox:
@@ -77,7 +77,7 @@ service:
     externalPort: 8080 #External port (port on which the service is published) for the backend
 
 monitoring:
-  enabled: false #Enable/Disable application monitoring using Elastic Stack
+  enabled: true #Enable/Disable application monitoring using Elastic Stack
   dnsName: kibana.polls.com #DNS name to access the monitoring solution. Add this to your hosts file
   elasticVersion: 8.11.1 #Elastic stack version to use
 
