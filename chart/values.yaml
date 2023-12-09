@@ -1,19 +1,17 @@
-environment: test
-
-pullPolicy: IfNotPresent
-
+environment: prod #Used as a label for Kubernetes resources
+pullPolicy: IfNotPresent #Policy for downloading Docker images
 rollingUpdate:
-  maxUnavailable: 1
-  maxSurge: 1
+  maxUnavailable: 1 #The number of pods that can be unavailable during the update process
+  maxSurge: 1 #The number of pods that can be created above the desired amount of pods during an update
 
 app:
-  name: polls
-  dnsName: app.polls.com
+  name: polls #Used as a label for Kubernetes resources
+  dnsName: app.polls.com #DNS name to access the application. Add this to your hosts file
   frontend:
-    imageRepository: guilleguerrero/polls-frontend
-    imageTag: 1.0.0
-    replicaCount: 1
-    resources:
+    imageRepository: guilleguerrero/polls-frontend #Frontend image repository name
+    imageTag: 1.0.0 #Frontend image version
+    replicaCount: 1 #Number of replicas for the frontend
+    resources: #Resources for the frontend (this entire block is used in the frontend deployment).
       limits:
         cpu: 0.5
         memory: "700Mi"
@@ -21,19 +19,19 @@ app:
         cpu: 0.5
         memory: "300Mi"
     autoscaling:
-      maxReplicas: 2
-      cpuAveragePercentageUtilization: 60
+      maxReplicas: 2 #Maximum number of replicas for frontend autoscaling
+      cpuAveragePercentageUtilization: 60 #Percentage of CPU usage which, if exceeded, auto-scaling is applied to the frontend
     livenessProbe:
-      initialDelaySeconds: 30
-      periodSeconds: 10
+      initialDelaySeconds: 30 #Number of seconds to wait before starting the first liveness probe for the frontend
+      periodSeconds: 10 #Number of seconds to wait before performing a new liveness probe for the frontend
     readinessProbe:
-      initialDelaySeconds: 5
-      periodSeconds: 10
+      initialDelaySeconds: 5 #Number of seconds to wait before starting the first readiness probe for the frontend
+      periodSeconds: 10 #Number of seconds to wait before performing a new readiness probe for the frontend
   backend:
-    imageRepository: guilleguerrero/polls-backend
-    imageTag: 1.0.0
-    replicaCount: 1
-    resources:
+    imageRepository: guilleguerrero/polls-backend #Backend image repository name
+    imageTag: 1.0.0 #Backend image version
+    replicaCount: 1 #Number of replicas for the backend
+    resources: #Resources for the backend (this entire block is used in the backend deployment).
       limits:
         cpu: 0.5
         memory: "1000Mi"
@@ -41,32 +39,28 @@ app:
         cpu: 0.5
         memory: "500Mi"
     autoscaling:
-      maxReplicas: 2
-      cpuAveragePercentageUtilization: 60
+      maxReplicas: 2 #Maximum number of replicas for backend autoscaling
+      cpuAveragePercentageUtilization: 60 #Percentage of CPU usage which, if exceeded, auto-scaling is applied to the backend
     livenessProbe:
-      initialDelaySeconds: 250
-      periodSeconds: 10
+      initialDelaySeconds: 60 #250 #Number of seconds to wait before starting the first liveness probe for the backend
+      periodSeconds: 10 #Number of seconds to wait before performing a new liveness probe for the backend
     readinessProbe:
-      initialDelaySeconds: 300
-      periodSeconds: 10
+      initialDelaySeconds: 60 #300 #Number of seconds to wait before starting the first readiness probe for the backend
+      periodSeconds: 10 #Number of seconds to wait before performing a new readiness probe for the backend
   init:
     busybox:
-      imageRepository: busybox
-      imageTag: 1.28
+      imageTag: 1.28 #Busybox image version (used for init-containers)
     curl:
-      imageRepository: curlimages/curl
-      imageTag: 8.4.0
+      imageTag: 8.4.0 #Curl image version (used for init-containers)
 
 database:
   mysql:
-    serviceName: mysql-database
-    replicaCount: 1
-    imageRepository: mysql
-    imageTag: 5.6
-    storageName: mysql-persistent-storage
-    storageAmmount: 500Mi
-    dbName: polls
-    resources:
+    serviceName: mysql-database #MYSQL Database service name
+    replicaCount: 1 #Number of replicas for the MYSQL database
+    imageTag: 5.6 #MYSQL Database image version
+    storageAmmount: 500Mi #Size of storage used for the MYSQL database
+    dbName: polls #DB name for the application
+    resources: #Resources for the MYSQL database (this entire block is used in the database statefulset).
       limits:
         cpu: 0.5
         memory: "1000Mi"
@@ -76,19 +70,16 @@ database:
 
 service:
   database:
-    internalPort: 3306
-    externalPort: 3306
+    externalPort: 3306 #External port (port on which the service is published) for the database
   frontend:
-    internalPort: 80
-    externalPort: 80
+    externalPort: 80 #External port (port on which the service is published) for the frontend
   backend:
-    internalPort: 8080
-    externalPort: 8080
+    externalPort: 8080 #External port (port on which the service is published) for the backend
 
 monitoring:
-  enabled: false
-  dnsName: kibana.polls.com
-  elasticVersion: 8.11.1
+  enabled: false #Enable/Disable application monitoring using Elastic Stack
+  dnsName: kibana.polls.com #DNS name to access the monitoring solution. Add this to your hosts file
+  elasticVersion: 8.11.1 #Elastic stack version to use
 
 #Base64 encoded value. Use command base64 for encoding/decoding secrets.
 #For encoding: echo -n <textplain-secret> | base64
@@ -96,9 +87,9 @@ monitoring:
 secret:
   database:
     mysql:
-      rootPassword: Y2hhbmdlbWU=
-      userUsername: Y2hhbmdlbWU=
-      userPassword: Y2hhbmdlbWU=
+      rootPassword: Y2hhbmdlbWU= #Root password for mysql database
+      userUsername: Y2hhbmdlbWU= #Username for mysql database
+      userPassword: Y2hhbmdlbWU= #User password for mysql database
 
 #Chart dependencies values
 metrics-server:
@@ -107,10 +98,10 @@ metrics-server:
 
 ingress-nginx:
   controller:
-    podAnnotations:
+    podAnnotations: #These annotations are necessary for collecting NGINX access and error logs using filebeat and subsequently sending them to Elasticsearch.
       co.elastic.logs/module: nginx
       co.elastic.logs/fileset.stdout: access
       co.elastic.logs/fileset.stderr: error
 
 eck-operator:
-  installCRDs: false
+  installCRDs: false #Instruct the Elastic operator not to deploy the Elastic CRDs since these are deployed as part of the chart.

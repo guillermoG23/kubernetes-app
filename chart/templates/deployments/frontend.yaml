@@ -28,7 +28,7 @@ spec:
     spec:
       initContainers:
         - name: init-rect-frontent
-          image: {{ .Values.app.init.busybox.imageRepository}}:{{ .Values.app.init.busybox.imageTag }}
+          image: busybox:{{ .Values.app.init.busybox.imageTag }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ['sh', '-c', "until nslookup {{ .Release.Name }}-springboot-backend; do echo waiting for backend service; sleep 2; done"]
       containers:
@@ -37,11 +37,11 @@ spec:
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.frontend.internalPort }}
+              containerPort: 80
           livenessProbe:
             httpGet:
               path: /
-              port: {{ .Values.service.frontend.internalPort }}
+              port: 80
               scheme: HTTP
             initialDelaySeconds: {{ .Values.app.frontend.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.app.frontend.livenessProbe.periodSeconds }}
@@ -51,7 +51,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: {{ .Values.service.frontend.internalPort }}
+              port: 80
               scheme: HTTP
             initialDelaySeconds: {{ .Values.app.frontend.readinessProbe.initialDelaySeconds}}
             periodSeconds: {{ .Values.app.frontend.readinessProbe.periodSeconds }}
@@ -62,4 +62,4 @@ spec:
 {{ toYaml .Values.app.frontend.resources | indent 12 }}
           env:
             - name: NODE_APP_URL
-              value: http://{{ .Release.Name }}-springboot-backend:{{ .Values.service.backend.internalPort }}/api
+              value: http://{{ .Release.Name }}-springboot-backend:8080/api

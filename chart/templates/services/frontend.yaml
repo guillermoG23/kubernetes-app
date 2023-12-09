@@ -12,7 +12,7 @@ spec:
   - name: http
     protocol: TCP
     port: {{ .Values.service.frontend.externalPort }}
-    targetPort: {{ .Values.service.frontend.internalPort }}
+    targetPort: 80
   type: ClusterIP
   clusterIP: None
   selector:

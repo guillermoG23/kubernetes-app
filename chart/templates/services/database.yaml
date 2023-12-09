@@ -12,7 +12,7 @@ spec:
   - name: mysql
     protocol: TCP
     port: {{ .Values.service.database.externalPort }}
-    targetPort: {{ .Values.service.database.internalPort }}
+    targetPort: 3306
   type: ClusterIP
   clusterIP: None
   selector:
