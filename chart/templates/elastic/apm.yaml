@@ -1,0 +1,25 @@
+{{ if .Values.monitoring.enabled }}
+apiVersion: apm.k8s.elastic.co/v1
+kind: ApmServer
+metadata:
+  name: {{ .Release.Name }}-apm
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  version: {{ .Values.monitoring.elasticVersion }}
+  count: 1
+  config:
+    apm-server:
+      rum:
+        enabled: true
+      auth:
+        anonymous:
+          enabled: true
+  elasticsearchRef:
+    name: {{ .Release.Name }}-elasticsearch
+  kibanaRef:
+    name: {{ .Release.Name }}-kibana
+{{ end }}

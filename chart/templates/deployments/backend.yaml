@@ -26,11 +26,28 @@ spec:
         app: {{ .Values.app.name }}
         release: {{ .Release.Name }}
     spec:
+{{ if .Values.monitoring.enabled }}
+      volumes:
+        - name: elastic-apm-agent
+          emptyDir: {}
+{{ end }}
       initContainers:
         - name: init-springboot-backend
-          image: {{ .Values.app.init.imageRepository}}:{{ .Values.app.init.imageTag }}
+          image: {{ .Values.app.init.busybox.imageRepository}}:{{ .Values.app.init.busybox.imageTag }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ['sh', '-c', "until nslookup {{ .Release.Name }}-mysql-database; do echo waiting for database service; sleep 2; done"]
+{{ if .Values.monitoring.enabled }}
+        - name: init-springboot-backend-elastic
+          image: {{ .Values.app.init.curl.imageRepository}}:{{ .Values.app.init.curl.imageTag }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ['sh', '-c', "until [ $response == '200' ]; do response=$(curl --write-out '%{http_code}' --silent --output /dev/null https://{{ .Release.Name}}-kibana-kb-http:5601/login -k); echo waiting for elastic - $response; sleep 5; done" ]
+        - name: elastic-java-agent
+          image: docker.elastic.co/observability/apm-agent-java:1.12.0
+          volumeMounts:
+            - mountPath: /elastic/apm/agent
+              name: elastic-apm-agent
+          command: ['cp', '-v', '/usr/agent/elastic-apm-agent.jar', '/elastic/apm/agent']
+{{ end }}
       containers:
         - name: springboot-backend
           image: {{ .Values.app.backend.imageRepository}}:{{ .Values.app.backend.imageTag }}
@@ -41,21 +58,26 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ .Values.service.backend.internalPort }}
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.app.backend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.backend.livenessProbe.periodSeconds }}
             timeoutSeconds: 5
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 5
           readinessProbe:
             tcpSocket:
               port: {{ .Values.service.backend.internalPort }}
-            initialDelaySeconds: 60
-            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.app.backend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.backend.readinessProbe.periodSeconds }}
             timeoutSeconds: 1
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 5
           resources:
 {{ toYaml .Values.app.backend.resources | indent 12 }}
+{{ if .Values.monitoring.enabled }}
+          volumeMounts:
+            - mountPath: /elastic/apm/agent
+              name: elastic-apm-agent
+{{ end }}
           env:
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
@@ -69,3 +91,38 @@ spec:
                   key: password
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://{{ .Release.Name }}-mysql-database:{{ .Values.service.database.internalPort }}/{{ .Values.database.mysql.dbName }}?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+{{ if .Values.monitoring.enabled }}            
+            - name: ELASTIC_APM_SERVER_URL
+              value: "https://{{.Release.Name }}-apm-apm-http:8200"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-apm-apm-token
+                  key: secret-token
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "polls-backend"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "com.example.polls.PollsApplication"
+            - name: ELASTIC_APM_ENVIRONMENT
+              value: ""
+            - name: ELASTIC_APM_VERIFY_SERVER_CERT
+              value: "false"
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/elastic/apm/agent/elastic-apm-agent.jar
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: KUBERNETES_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KUBERNETES_POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+{{ end }}

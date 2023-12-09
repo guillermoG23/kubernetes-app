@@ -28,7 +28,7 @@ spec:
     spec:
       initContainers:
         - name: init-rect-frontent
-          image: {{ .Values.app.init.imageRepository}}:{{ .Values.app.init.imageTag }}
+          image: {{ .Values.app.init.busybox.imageRepository}}:{{ .Values.app.init.busybox.imageTag }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ['sh', '-c', "until nslookup {{ .Release.Name }}-springboot-backend; do echo waiting for backend service; sleep 2; done"]
       containers:
@@ -43,8 +43,8 @@ spec:
               path: /
               port: {{ .Values.service.frontend.internalPort }}
               scheme: HTTP
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.app.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.frontend.livenessProbe.periodSeconds }}
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 3
@@ -53,8 +53,8 @@ spec:
               path: /
               port: {{ .Values.service.frontend.internalPort }}
               scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.app.frontend.readinessProbe.initialDelaySeconds}}
+            periodSeconds: {{ .Values.app.frontend.readinessProbe.periodSeconds }}
             timeoutSeconds: 1
             successThreshold: 1
             failureThreshold: 3

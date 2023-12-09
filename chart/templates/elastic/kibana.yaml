@@ -1,0 +1,22 @@
+{{ if .Values.monitoring.enabled }}
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: {{ .Release.Name }}-kibana
+  labels:
+    release-name: {{ .Release.Name }}
+    release-namespace: {{ .Release.Namespace }}
+    environment: {{ .Values.environment }}
+    app: {{ .Values.app.name }}
+spec:
+  version: {{ .Values.monitoring.elasticVersion }}
+  count: 1
+  config:
+    xpack.fleet.packages:
+        - name: apm
+          version: latest
+        - name: nginx
+          version: latest
+  elasticsearchRef:
+    name: {{ .Release.Name }}-elasticsearch
+{{ end }}

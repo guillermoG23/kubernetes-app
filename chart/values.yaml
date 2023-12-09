@@ -8,38 +8,54 @@ rollingUpdate:
 
 app:
   name: polls
-  dnsName: polls.example
+  dnsName: app.polls.com
   frontend:
-    imageRepository: frontend
-    imageTag: v2
+    imageRepository: guilleguerrero/polls-frontend
+    imageTag: 1.0.0
     replicaCount: 1
     resources:
       limits:
-        cpu: 2
+        cpu: 0.5
         memory: "700Mi"
       requests:
-        cpu: 1
+        cpu: 0.5
         memory: "300Mi"
     autoscaling:
-      maxReplicas: 5
+      maxReplicas: 2
       cpuAveragePercentageUtilization: 60
+    livenessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
   backend:
-    imageRepository: backend
-    imageTag: v2
+    imageRepository: guilleguerrero/polls-backend
+    imageTag: 1.0.0
     replicaCount: 1
     resources:
       limits:
-        cpu: 2
+        cpu: 0.5
         memory: "1000Mi"
       requests:
-        cpu: 1
+        cpu: 0.5
         memory: "500Mi"
     autoscaling:
-      maxReplicas: 5
+      maxReplicas: 2
       cpuAveragePercentageUtilization: 60
+    livenessProbe:
+      initialDelaySeconds: 250
+      periodSeconds: 10
+    readinessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 10
   init:
-    imageRepository: busybox
-    imageTag: 1.28
+    busybox:
+      imageRepository: busybox
+      imageTag: 1.28
+    curl:
+      imageRepository: curlimages/curl
+      imageTag: 8.4.0
 
 database:
   mysql:
@@ -52,10 +68,10 @@ database:
     dbName: polls
     resources:
       limits:
-        cpu: 2
+        cpu: 0.5
         memory: "1000Mi"
       requests:
-        cpu: 1
+        cpu: 0.5
         memory: "500Mi"
 
 service:
@@ -69,9 +85,14 @@ service:
     internalPort: 8080
     externalPort: 8080
 
+monitoring:
+  enabled: false
+  dnsName: kibana.polls.com
+  elasticVersion: 8.11.1
+
 #Base64 encoded value. Use command base64 for encoding/decoding secrets.
-#For encoding: echo -n 'textplain-secret' | base64
-#For decoding: echo 'base64-secret' | base64 -d
+#For encoding: echo -n <textplain-secret> | base64
+#For decoding: echo <base64-secret> | base64 -d
 secret:
   database:
     mysql:
@@ -79,6 +100,17 @@ secret:
       userUsername: Y2hhbmdlbWU=
       userPassword: Y2hhbmdlbWU=
 
+#Chart dependencies values
 metrics-server:
   args:
-    - "--kubelet-insecure-tls"
+    - "--kubelet-insecure-tls" #This is necessary so that the certificates are not verified in case docker desktop is used
+
+ingress-nginx:
+  controller:
+    podAnnotations:
+      co.elastic.logs/module: nginx
+      co.elastic.logs/fileset.stdout: access
+      co.elastic.logs/fileset.stderr: error
+
+eck-operator:
+  installCRDs: false
