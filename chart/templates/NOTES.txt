@@ -1,0 +1,16 @@
+El chart {{ .Chart.Name }} con nombre de release {{ .Release.Name }} está siendo instalado.
+
+Para acceder a la aplicación:
+
+  - Configurar el nombre {{ .Values.app.dnsName }} en su archivo hosts
+  - Acceder a la URL http://{{ .Values.app.dnsName }}
+{{ if .Values.monitoring.enabled }}
+Ha habilitado el monitoreo de la aplicación a través de Elastic Observability. 
+
+Para acceder al monitoreo:
+
+  - Configurar el nombre {{ .Values.monitoring.dnsName }} en su archivo hosts
+  - Obtener la contraseña de Elastic: kubectl get secret {{ .Release.Name }}-elasticsearch-es-elastic-user -o go-template='{{ "{{" }}.data.elastic | base64decode{{ "}}" }}'
+  - Acceder a la URL https://{{ .Values.monitoring.dnsName }} utilizando el usuario "elastic" y la contraseña obtenida en el punto anterior
+
+{{ end }}
