@@ -24,6 +24,13 @@ Los requerimientos necesarios para el despliegue de la aplicación en Kubernetes
 ## Chart
 En esta sección se explica los distintas [recursos de Kubernetes](https://kubernetes.io/docs/reference/kubernetes-api/) modelados en el *chart* y cómo utilizarlo.
 
+### Dependencias
+El *chart* tiene como dependencias los siguientes *charts*:
+
+- [ingress-nginx v4.8.3](https://kubernetes.github.io/ingress-nginx)
+- [metrics-server v3.11.0](https://kubernetes-sigs.github.io/metrics-server)
+- [eck-operator v2.10.0](https://artifacthub.io/packages/helm/elastic/eck-operator)
+
 ### Recursos
 
 Para modelar la aplicación de tres capas se utilizaron dos [***Deployments***](./chart/templates/deployments/): uno para el *frontend* y otro para el *backend*; y un [***Statefulset***](./chart/templates/storageclass/) para la base de datos. Para lograr el almacenamiento persistente de la base de datos se definió además un [***StorageClass***](./chart/templates/storageclass/) que utiliza como 
@@ -42,7 +49,7 @@ Es importante mencionar que se utilizaron [***Secrets***](./chart/templates/secr
 
 Por otra parte, tanto para el *frontend* y *backend* se permite el autoesclado horizontal a través del uso del objeto [***HorizontalPodAutoscaler***](./chart/templates/horizontalpodautoscaler/).
 
-Por último, se utiliza la tecnología [Elastic Stack](https://www.elastic.co/es/elastic-stack) para el monitoreo de la aplicación a través de [*Application Performance Monitoring*](https://www.elastic.co/es/observability/application-performance-monitoring) (APM) y la recolección de logs de accesos HTTP de NGINX. Para esto se utiliza [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html) (ECK) para orquestar un despliegue y los CRD (Custom Resource Definitions) de [Elastic](./chart/crds/). El Stack desplegado consiste de [Elasticsearch](./chart/templates/elastic/elasticsearch.yaml) para el almacenamiento de los datos, [Kibana](./chart/templates/elastic/kibana.yaml) para la visualización de los datos, [APM](./chart/templates/elastic/apm.yaml) y [Filebeat](./chart/templates/elastic/filebeat.yaml) para la recolección de eventos y logs y un [ingress](./chart/templates/elastic/ingress.yml) para el acceso HTTPS al servicio.
+Por último, se utiliza la tecnología [Elastic Stack](https://www.elastic.co/es/elastic-stack) para el monitoreo de la aplicación a través de [*Application Performance Monitoring*](https://www.elastic.co/es/observability/application-performance-monitoring) (APM) y la recolección de logs de accesos HTTP de NGINX. Para esto se utiliza [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html) (ECK) para orquestar un despliegue y los CRD (Custom Resource Definitions) de [Elastic](./chart/crds/). El Stack desplegado consiste de [Elasticsearch](./chart/templates/elastic/elasticsearch.yaml) para el almacenamiento de los datos, [Kibana](./chart/templates/elastic/kibana.yaml) para la visualización de los datos, [APM](./chart/templates/elastic/apm.yaml) y [Filebeat](./chart/templates/elastic/filebeat.yaml) para la recolección de eventos y logs y un [ingress](./chart/templates/elastic/ingress.yml) para el acceso HTTPS al servicio. Es importante destacar que para el despliegue del Elastic Stack se utilizaron recursos que pueden ser encontrados en los *quickstarts* de la [documentación de Elastic](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html).
 
 ### Valores
 El despliegue de la aplicación puede ser modificado en base al valor que se asignan a las variables del *chart* especificadas en el archivo [values.yaml](./chart/values.yaml). A continuación se explican cada uno de estos valores.
@@ -140,10 +147,20 @@ Para acceder a la aplicación:
 
   - Configurar el nombre app.polls.com en su archivo hosts
   - Acceder a la URL http://app.polls.com
+
+Ha habilitado el monitoreo de la aplicación a través de Elastic Observability.
+
+Para acceder al monitoreo:
+
+  - Configurar el nombre kibana.polls.com en su archivo hosts
+  - Obtener la contraseña de Elastic: kubectl get secret polls-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
+  - Acceder a la URL https://kibana.polls.com utilizando el usuario "elastic" y la contraseña obtenida en el punto anterior
+      Para visualizar los datos de la aplicación utilizar la URL https://kibana.polls.com/app/apm/services
+      Para visualizar los logs de NGINX utilizar la URL https://kibana.polls.com/app/dashboards y filtrar los dashboards de NGINX 
 ```
 Tener en cuenta que la primera vez es necesario descargar las imagenes de los contenedores desde [Docker.hub](https://hub.docker.com/) lo cual puede llevar un tiempo considerable dependiendo de su conexión a internet.
 
-4. Configurar el nombre de dominio **app.polls.com** en su archivo hosts.
+4. Configurar los nombres de dominio **app.polls.com** y **kibana.polls.com** en su archivo hosts.
 ```
 127.0.0.1 app.polls.com kibana.polls.com
 ```
@@ -154,16 +171,20 @@ Tener en cuenta que la primera vez es necesario descargar las imagenes de los co
 
 ```
 $ kubectl get pods
-NAME                                              READY   STATUS    RESTARTS   AGE
-elastic-operator-0                                1/1     Running   0          8m11s
-polls-ingress-nginx-controller-578866ccd4-pg8fh   1/1     Running   0          8m12s
-polls-metrics-server-595c9bbd77-gvgtg             1/1     Running   0          8m12s
-polls-mysql-database-0                            1/1     Running   0          8m11s
-polls-react-frontend-86648d4b44-55h47             1/1     Running   0          8m12s
-polls-springboot-backend-946cd4db7-mkwfr          1/1     Running   0          8m12s
+NAME                                              READY   STATUS    RESTARTS      AGE
+elastic-operator-0                                1/1     Running   0             18m
+polls-apm-apm-server-c5b895598-2btm4              1/1     Running   0             17m
+polls-elasticsearch-es-default-0                  1/1     Running   0             17m
+polls-filebeat-pq6nl                              1/1     Running   0             18m
+polls-ingress-nginx-controller-578866ccd4-fd2jj   1/1     Running   0             18m
+polls-kibana-kb-6fc86b7fc6-2krv8                  1/1     Running   0             17m
+polls-metrics-server-595c9bbd77-5zw6m             1/1     Running   0             18m
+polls-mysql-database-0                            1/1     Running   0             18m
+polls-react-frontend-86648d4b44-nzn5q             1/1     Running   0             18m
+polls-springboot-backend-8646fd94cf-8q4nj         1/1     Running   0             18m
 ```
 
-Puede modifica los valores del archivo [values.yaml](./chart/values.yaml) para ajustar el despliegue de la aplicación. Para más detalles de los parámetros referirse a la sección [Chart](#chart).
+Puede modifica los valores del archivo [values.yaml](./chart/values.yaml) para ajustar el despliegue de la aplicación.
 
 ### Desinstalación
 Para desinstalar el *chart* seguir los siguientes pasos:
@@ -187,7 +208,7 @@ persistentvolumeclaim "mysql-polls-mysql-database-0" deleted
 ```
 
 ### Actualización
-En caso que ua tenga instalado el *chart* y haya realizado alguna modificación en los valores, puede volver a desplegarlo utilizando el comando:
+En caso que ya tenga instalado el *chart* y haya realizado alguna modificación en los valores, puede volver a desplegarlo utilizando el comando:
 
 ```
 helm upgrade polls chart
@@ -241,3 +262,10 @@ $ docker build . -t polls-backend:1.0.0
 Puede ajustar los valores del *tag* utilizado para generar la imagen. Tener en cuenta que para utilizar estas nuevas imágenes debe ajustar los valores **Values.app.frontend.imageRepository**, **Values.app.fronted.imageTag** y **Values.app.backend.imageRepository**, **Values.app.backend.imageTag** del *chart*.
 
 ## Trabajo a futuro
+Como trabajo a futuro para mejorar el despliegue de la aplicación en Kubernetes se plantean las siguientes líneas de trabajo:
+
+- Utilizar certificados válidos, tanto para los servicios internos (por ejemplo Elasticsearch) como para aquellos servicios que son expuestos a los usuarios, como lo es Kibana, a través de los *ingress*. También sería una mejora importante exponer la aplicación web a través de HTTPS y no HTTP como se encuentra actualmente.
+- Hacer uso de un mecanismo de sincronización de la base de datos MySQL de forma que sea posible escalar horizontalmente el *statefulset* y de esta forma tener varias bases de datos que permitan atender a múltiples usuarios de la aplicación en los momentos de mayor carga. En este sentido se puede utilizar como guía la propia [documentación de Kubernetes](https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/) que plantea ejemplos para esto.
+- Se podría mejorar el despliegue del Elastic Stack haciendo uso de un clúster de Elasticsearch conformado por múltiples nodos, lo cual brinda resiliencia ante posibles fallas de estos.
+- Implementar un mecanismo de monitoreo sintético el cual permita identificar problemas de la aplicación. En este sentido Elastic Observability brinda funcionalidades que pueden ser de ayuda.
+- Solucionar el bug que presenta actualmente la aplicación que hace que un usuario al loguearse vea las encuestas de forma repetida.
