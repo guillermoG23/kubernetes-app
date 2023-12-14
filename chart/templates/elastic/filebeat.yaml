@@ -216,12 +216,12 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       initContainers:
         - name: init-filebeat
-          image: curlimages/curl:{{ .Values.app.init.curl }}
+          image: curlimages/curl:{{ .Values.app.init.curl.imageTag }}
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ['sh', '-c', "until [ $response == '200' ]; do response=$(curl --write-out '%{http_code}' --silent --output /dev/null https://{{ .Release.Name}}-kibana-kb-http:5601/login -k); echo waiting for elastic - $response; sleep 5; done" ]
       containers:
         - name: filebeat
-          image: docker.elastic.co/beats/filebeat:8.11.1
+          image: docker.elastic.co/beats/filebeat:{{ .Values.minitoring.elasticVersion }}
           args: ["-c", "/etc/filebeat.yml", "-e"]
           env:
             - name: ELASTICSEARCH_HOST
