@@ -47,9 +47,9 @@ También se implementó, a través de *init containers*, una dependencia en el d
 
 Es importante mencionar que se utilizaron [***Secrets***](./chart/templates/secrets/) para almacenar los secretos de la base de datos (como usuario y contraseña) que luego son utilizados en los contenedores.
 
-Por otra parte, tanto para el *frontend* y *backend* se permite el autoesclado horizontal a través del uso del objeto [***HorizontalPodAutoscaler***](./chart/templates/horizontalpodautoscaler/).
+Por otra parte, tanto para el *frontend* y *backend* se permite el autoesclado horizontal a través del uso del objeto [***HorizontalPodAutoscaler***](./chart/templates/horizontalpodautoscaler/). Para esto es necesario contar con el *metrics server* de Kubernetes.
 
-Por último, se utiliza la tecnología [Elastic Stack](https://www.elastic.co/es/elastic-stack) para el monitoreo de la aplicación a través de [*Application Performance Monitoring*](https://www.elastic.co/es/observability/application-performance-monitoring) (APM) y la recolección de logs de accesos HTTP de NGINX. Para esto se utiliza [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html) (ECK) para orquestar un despliegue y los CRD (Custom Resource Definitions) de [Elastic](./chart/crds/). El Stack desplegado consiste de [Elasticsearch](./chart/templates/elastic/elasticsearch.yaml) para el almacenamiento de los datos, [Kibana](./chart/templates/elastic/kibana.yaml) para la visualización de los datos, [APM](./chart/templates/elastic/apm.yaml) y [Filebeat](./chart/templates/elastic/filebeat.yaml) para la recolección de eventos y logs y un [ingress](./chart/templates/elastic/ingress.yml) para el acceso HTTPS al servicio. Es importante destacar que para el despliegue del Elastic Stack se utilizaron recursos que pueden ser encontrados en los *quickstarts* de la [documentación de Elastic](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html).
+Por último, se utiliza la tecnología [Elastic Stack](https://www.elastic.co/es/elastic-stack) para el monitoreo de la aplicación a través de [*Application Performance Monitoring*](https://www.elastic.co/es/observability/application-performance-monitoring) (APM) y la recolección de logs de accesos HTTP de NGINX. Para esto se utiliza [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html) (ECK) para orquestar un despliegue del *stack* y los CRDs (Custom Resource Definitions) de [Elastic](./chart/crds/). El Stack desplegado consiste de [Elasticsearch](./chart/templates/elastic/elasticsearch.yaml) para el almacenamiento de los datos, [Kibana](./chart/templates/elastic/kibana.yaml) para la visualización de los datos, [APM](./chart/templates/elastic/apm.yaml) y [Filebeat](./chart/templates/elastic/filebeat.yaml) para la recolección de eventos y logs y un [ingress](./chart/templates/elastic/ingress.yml) para el acceso HTTPS al servicio. Es importante destacar que para el despliegue del Elastic Stack se utilizaron recursos que pueden ser encontrados en los *quickstarts* de la [documentación de Elastic](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html).
 
 ### Valores
 El despliegue de la aplicación puede ser modificado en base al valor que se asignan a las variables del *chart* especificadas en el archivo [values.yaml](./chart/values.yaml). A continuación se explican cada uno de estos valores.
@@ -59,8 +59,8 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **rollingUpdate.maxUnavailable**: la cantidad de pods que pueden no estar disponibles durante el proceso de actualización
 - **rollingUpdate.maxSurge**: la cantidad de pods que pueden ser creados por encima de la cantidad deseada de pods durante una actualización
 - **app.name**: es utilizado como *labels* para los distintos recursos de Kubernetes
-- **app.dnsName**: nombre DNS utilizado para acceder a la aplicación. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost)
-- **app.frontend.imageRepository**: nombre del repositorio desde el cual se obtiene la imagen del *frontend*.
+- **app.dnsName**: nombre DNS utilizado para acceder a la aplicación. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost). Si modifica este valor debe regenerar la imagen Docker del *backend*, ver sección [Imagenes Docker](#imagenes-docker)
+- **app.frontend.imageRepository**: nombre del repositorio desde el cual se obtiene la imagen del *frontend*
 - **app.frontend.imageTag**: versión de la imagen del *frontend*
 - **app.frontend.replicaCount**: número de replicas de *pods* a utilizar en el *frontend*
 - **app.frontend.resources**: bloque donde se especifican los recursos que pueden utilizar los *pods* del *frontend*
@@ -70,7 +70,7 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **app.frontend.livenessProbe.periodSeconds**: cantidad de segundos a esperar antes de realizar un nuevo *liveness probe* para el *frontend*
 - **app.frontend.readinessProbe.initialDelaySeconds**: cantidad de segundos a esperar antes de comenzar con los *rediness probes* para el *frontend*
 - **app.frontend.readinessProbe.periodSeconds**: cantidad de segundos a esperar antes de realizar un nuevo *rediness probe* para el *frontend*
-- **app.backend.imageRepository**: nombre del repositorio desde el cual se obtiene la imagen del *backend*.
+- **app.backend.imageRepository**: nombre del repositorio desde el cual se obtiene la imagen del *backend*
 - **app.backend.imageTag**: versión de la imagen del *backend*
 - **app.backend.replicaCount**: número de replicas de *pods* a utilizar en el *backend*
 - **app.backend.resources**: bloque donde se especifican los recursos que pueden utilizar los *pods* del *backend*
@@ -92,14 +92,16 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **service.frontend.externalPort**: puerto en el que se publica el servicio para el *frontend*
 - **service.backend.externalPort**: puerto en el que se publica el servicio para el *backend*
 - **monitoring.enabled**: habilitar/deshabilitar el monitoreo de la aplicación utilizando el Elastic Stack
-- **monitoring.dnsName**: nombre DNS utilizado para acceder a la solución de monitoreo. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost)
+- **monitoring.dnsName**: nombre DNS utilizado para acceder a la solución de monitoreo. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost). Si modifica este valor debe regenerar la imagen Docker del *frontend*, ver sección [Imagenes Docker](#imagenes-docker)
 - **monitoring.elasticVersion**: versión del Elastic Stack a utilizar
 - **secret.database.mysql.rootPassword**: valor de la contraseña de root para la base de datos MYSQL. Debe estar codificado en Base 64 
 - **secret.database.mysql.userUsername**: valor del nombre de usuario para la base de datos MYSQL. Debe estar codificado en Base 64
 - **secret.database.mysql.userPassword**: valor de la contraseña de usuario para la base de datos MYSQL. Debe estar codificado en Base 64
-- **metrics-server.args**: argumentos pasados al chart de metrics-server. En el caso de Docker Desktop es necesario para pasar el valor "--kubelet-insecure-tls" lo cual deshabilita la verificación de certificados.
-- **ingress-nginx.controller.podAnnotations**: anotaciónes que se asignan a los *pods* utilizados por el *ingress controller** NGINX. Son utilizado para que se pueda ingestar logs de acceso y logs de error de NGINX utilizando Filebeat.
-- **eck-operator.installCRDs**: se deshabilita la instalación de los CRDs de Elastic por parte del operador ECK. La instalación de los CRDs es realizada directamente por el chart prinicpal y no esta dependencia.
+- **metrics-server.args**: argumentos pasados al chart de metrics-server. En el caso de Docker Desktop es necesario para pasar el valor "--kubelet-insecure-tls" lo cual deshabilita la verificación de certificados
+- **ingress-nginx.controller.podAnnotations**: anotaciónes que se asignan a los *pods* utilizados por el *ingress controller** NGINX. Son utilizado para que se pueda ingestar logs de acceso y logs de error de NGINX utilizando Filebeat
+- **eck-operator.installCRDs**: se deshabilita la instalación de los CRDs de Elastic por parte del operador ECK. La instalación de los CRDs es realizada directamente por el chart principal y no esta dependencia
+
+Tener en cuenta que si se modifican los valores asociados a los *liveness* y *readiness* *probes* de forma que se especifican pocos segundos, puede ocasionar que los contenedores no tengan tiempo suficiente para inicializar y de esta forma entren en un estado de falla.
 
 ### Instalación
 Para instalar el *chart* seguir los siguientes pasos:
@@ -113,7 +115,7 @@ Cloning into 'kubernetes-app'...
 $ cd kubernetes-app
 ```
 
-2. Instalar las dependencias:
+2. Obtener las dependencias:
 
 ```
 $ helm dependency build chart
@@ -165,9 +167,9 @@ Tener en cuenta que la primera vez es necesario descargar las imagenes de los co
 127.0.0.1 app.polls.com kibana.polls.com
 ```
 
-5. Ingresar a la aplicación con la siguiente URL: **http://app.polls.com**.
+5. Ingresar a la aplicación con la siguiente URL: **http://app.polls.com**. En caso de habilitar el monitoreo acceder a Kibana con la URL: **https://kibana.polls.com**
 
-6. Una vez instalado el chart, debería obtener una salida similar al ejecutar el comando:
+6. Una vez instalado el chart, debería obtener una salida similar al ejecutar el siguiente comando:
 
 ```
 $ kubectl get pods
@@ -196,7 +198,7 @@ $ helm delete polls
 release "polls" uninstalled
 ```
 
-2. Eliminar de forma manual el recurso *Persistent Volume Claim* (PVC) que corresponde a MySQL dado que este no es eliminado por el *chart*. Para esto primero obtener el nombre del PVC y luego eliminarlo utilizando el comando kubectl. Esto eliminará de forma automática el *Persistent Volume* (PV) generado.
+2. Eliminar de forma manual el recurso *Persistent Volume Claim* (PVC) que corresponde a MySQL dado que este no es eliminado por el *chart*. Para esto primero obtener el nombre del PVC y luego eliminarlo utilizando el comando kubectl. Esto eliminará de forma automática el *Persistent Volume* (PV) asociado.
 
 ```
 $ kubectl get pvc
@@ -239,11 +241,11 @@ const apm = initApm({
   serviceVersion: ''
 })
 ```
-El valor asignado a la propiedad **serverUrl** debe coincidir con el valor **Values.monitoring.kibanaDnsName** del *chart*. Si modifica dicho valor del *chart* entonces debe ajustar esta propiedad en el *frontend* y renegerar la imagen Docker (ver sección [Imagenes Docker](#imagenes-docker) para más detalle de este proceso). Estas líneas de codigo permiten monitorear el comportamiento del *frontend* a través de APM.
+El valor asignado a la propiedad **serverUrl** debe coincidir con el valor **Values.monitoring.dnsName** del *chart*. Si modifica dicho valor del *chart* entonces debe ajustar esta propiedad en el *frontend* y renegerar la imagen Docker (ver sección [Imagenes Docker](#imagenes-docker) para más detalle de este proceso). Estas líneas de codigo permiten monitorear el comportamiento del *frontend* a través de APM.
 
 ## Imagenes Docker
 
-Por defecto se utilizan las imagens docker [polls-frontend](https://hub.docker.com/r/guilleguerrero/polls-frontend) y [polls-backend](https://hub.docker.com/r/guilleguerrero/polls-backend) publicadas en Docker Hub.
+Por defecto se utilizan las imágens docker [polls-frontend](https://hub.docker.com/r/guilleguerrero/polls-frontend) y [polls-backend](https://hub.docker.com/r/guilleguerrero/polls-backend) publicadas en Docker Hub.
 
 A continuación se explica como crear las imágenes Docker en caso de ser necesario por algúna modificación en el código fuente.
 
@@ -266,6 +268,6 @@ Como trabajo a futuro para mejorar el despliegue de la aplicación en Kubernetes
 
 - Utilizar certificados válidos, tanto para los servicios internos (por ejemplo Elasticsearch) como para aquellos servicios que son expuestos a los usuarios, como lo es Kibana, a través de los *ingress*. También sería una mejora importante exponer la aplicación web a través de HTTPS y no HTTP como se encuentra actualmente.
 - Hacer uso de un mecanismo de sincronización de la base de datos MySQL de forma que sea posible escalar horizontalmente el *statefulset* y de esta forma tener varias bases de datos que permitan atender a múltiples usuarios de la aplicación en los momentos de mayor carga. En este sentido se puede utilizar como guía la propia [documentación de Kubernetes](https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/) que plantea ejemplos para esto.
-- Se podría mejorar el despliegue del Elastic Stack haciendo uso de un clúster de Elasticsearch conformado por múltiples nodos, lo cual brinda resiliencia ante posibles fallas de estos.
+- Se podría mejorar el despliegue del Elastic Stack haciendo uso de un clúster de Elasticsearch conformado por múltiples nodos, lo cual brinda resiliencia ante posibles fallas de los nodos.
 - Implementar un mecanismo de monitoreo sintético el cual permita identificar problemas de la aplicación. En este sentido Elastic Observability brinda funcionalidades que pueden ser de ayuda.
 - Solucionar el bug que presenta actualmente la aplicación que hace que un usuario al loguearse vea las encuestas de forma repetida.
