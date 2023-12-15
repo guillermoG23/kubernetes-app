@@ -14,7 +14,7 @@ spec:
       app: {{ .Values.app.name }}
       release: {{ .Release.Name }}
   serviceName: {{ .Values.database.mysql.serviceName }}
-  replicas: {{ .Values.database.mysql.replicaCount }}
+  replicas: 1
   minReadySeconds: 10
   template:
     metadata:
