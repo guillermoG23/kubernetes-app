@@ -83,11 +83,10 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **app.init.busybox.imageTag**: versión de la imagen de busybox a utilizar para los *init containers*
 - **app.init.curl.imageTag**: versión de la imagen de curl a utilizar para los *init containers*
 - **database.mysql.serviceName**: nombre del servicio de la base de datos MYSQL
-- **database.mysql.replicaCount**: número de replicas para los *pods* de la base de datos MYSQL.
 - **database.mysql.imageTag**: versión de la imagen de MYSQL a utilizar
 - **database.mysql.storageAmmount**: tamaño del *storage* utilizado por la base de datos MYSQL
 - **database.mysql.dbName**: nombre de la base de datos utilizado por la aplicación
-- **database.mysql.resource**: bloque donde se especifican los recursos que pueden utilizar los *pods* de la base de datos MYSQL.
+- **database.mysql.resource**: bloque donde se especifican los recursos que pueden utilizar los *pods* de la base de datos MYSQL
 - **service.database.externalPort**: puerto en el que se publica el servicio para la base de datos MYSQL
 - **service.frontend.externalPort**: puerto en el que se publica el servicio para el *frontend*
 - **service.backend.externalPort**: puerto en el que se publica el servicio para el *backend*
@@ -158,7 +157,7 @@ Para acceder al monitoreo:
   - Obtener la contraseña de Elastic: kubectl get secret polls-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
   - Acceder a la URL https://kibana.polls.com utilizando el usuario "elastic" y la contraseña obtenida en el punto anterior
       Para visualizar los datos de la aplicación utilizar la URL https://kibana.polls.com/app/apm/services
-      Para visualizar los logs de NGINX utilizar la URL https://kibana.polls.com/app/dashboards y filtrar los dashboards de NGINX 
+      Para visualizar los logs de NGINX utilizar la URL https://kibana.polls.com/app/dashboards y buscar el dashboard "[Filebeat Nginx] Overview ECS"
 ```
 Tener en cuenta que la primera vez es necesario descargar las imagenes de los contenedores desde [Docker.hub](https://hub.docker.com/) lo cual puede llevar un tiempo considerable dependiendo de su conexión a internet.
 
