@@ -19,7 +19,7 @@ app:
         cpu: 0.5
         memory: "300Mi"
     autoscaling:
-      maxReplicas: 2 #Maximum number of replicas for frontend autoscaling
+      maxReplicas: 3 #Maximum number of replicas for frontend autoscaling
       cpuAveragePercentageUtilization: 60 #Percentage of CPU usage which, if exceeded, auto-scaling is applied to the frontend
     livenessProbe:
       initialDelaySeconds: 30 #Number of seconds to wait before starting the first liveness probe for the frontend
@@ -39,7 +39,7 @@ app:
         cpu: 0.5
         memory: "500Mi"
     autoscaling:
-      maxReplicas: 2 #Maximum number of replicas for backend autoscaling
+      maxReplicas: 3 #Maximum number of replicas for backend autoscaling
       cpuAveragePercentageUtilization: 60 #Percentage of CPU usage which, if exceeded, auto-scaling is applied to the backend
     livenessProbe:
       initialDelaySeconds: 250 #Number of seconds to wait before starting the first liveness probe for the backend
