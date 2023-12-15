@@ -97,7 +97,7 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **secret.database.mysql.userUsername**: valor del nombre de usuario para la base de datos MYSQL. Debe estar codificado en Base 64
 - **secret.database.mysql.userPassword**: valor de la contraseña de usuario para la base de datos MYSQL. Debe estar codificado en Base 64
 - **metrics-server.args**: argumentos pasados al chart de metrics-server. En el caso de Docker Desktop es necesario para pasar el valor "--kubelet-insecure-tls" lo cual deshabilita la verificación de certificados
-- **ingress-nginx.controller.podAnnotations**: anotaciónes que se asignan a los *pods* utilizados por el *ingress controller** NGINX. Son utilizado para que se pueda ingestar logs de acceso y logs de error de NGINX utilizando Filebeat
+- **ingress-nginx.controller.podAnnotations**: anotaciónes que se asignan a los *pods* utilizados por el *ingress controller* NGINX. Son utilizado para que se pueda ingestar logs de acceso y logs de error de NGINX utilizando Filebeat
 - **eck-operator.installCRDs**: se deshabilita la instalación de los CRDs de Elastic por parte del operador ECK. La instalación de los CRDs es realizada directamente por el chart principal y no esta dependencia
 
 Tener en cuenta que si se modifican los valores asociados a los *liveness* y *readiness* *probes* de forma que se especifican pocos segundos, puede ocasionar que los contenedores no tengan tiempo suficiente para inicializar y de esta forma entren en un estado de falla.
@@ -182,7 +182,9 @@ polls-kibana-kb-6fc86b7fc6-2krv8                  1/1     Running   0           
 polls-metrics-server-595c9bbd77-5zw6m             1/1     Running   0             18m
 polls-mysql-database-0                            1/1     Running   0             18m
 polls-react-frontend-86648d4b44-nzn5q             1/1     Running   0             18m
+polls-react-frontend-86648d4b44-lgrn2             1/1     Running   0             18m
 polls-springboot-backend-8646fd94cf-8q4nj         1/1     Running   0             18m
+polls-springboot-backend-8646fd94cf-vl7k7         1/1     Running   0             18m
 ```
 
 Puede modifica los valores del archivo [values.yaml](./chart/values.yaml) para ajustar el despliegue de la aplicación.
