@@ -195,6 +195,8 @@ polls-springboot-backend-8646fd94cf-vl7k7         1/1     Running   0           
 
 Puede modifica los valores del archivo [values.yaml](./chart/values.yaml) para ajustar el despliegue de la aplicación. Por ejemplo, en caso que cuente con recursos de *hardware* muy limitados puede utilizar una sola réplica para el *frontend* y *backend* y deshabilitar el monitoreo de la solución con Elastic Observability.
 
+Tener en cuenta que dependiendo de sus recursos de *hardware* y su conexión a internet, una instalación completamente nueva puede llegar a demorar unos 15 minutos para alcanzar un estado completamente funcional.
+
 ### Desinstalación
 Para desinstalar el *chart* seguir los siguientes pasos:
 
