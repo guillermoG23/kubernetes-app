@@ -8,7 +8,7 @@ El trabajo se encuentra organizado de la siguiente forma:
 - [Requerimientos](#requerimientos): se listan los requerimientos de *hardware* y *software* necesarios.
 - [*Chart*](#chart): se aportan detalles sobre el *chart* implementado y su utilización.
 - [Aplicación](#aplicación): se dan detalles sobre la aplicación utilizada.
-- [Imagenes Docker](#imagenes-docker): se explica como generar las imagenes Docker utilizadas por la aplicación.
+- [Imágenes Docker](#imágenes-docker): se explica como generar las imágenes Docker utilizadas por la aplicación.
 - [Trabajo a Futuro](#trabajo-a-futuro): se exponen líneas de mejoras a implementar en un futuro.
 
 
@@ -22,7 +22,7 @@ Los requerimientos necesarios para el despliegue de la aplicación en Kubernetes
 - Conexión a internet para la descarga de imágenes Docker
 
 ## Chart
-En esta sección se explica los distintas [recursos de Kubernetes](https://kubernetes.io/docs/reference/kubernetes-api/) modelados en el *chart* y cómo utilizarlo.
+En esta sección se explica los distintos [recursos de Kubernetes](https://kubernetes.io/docs/reference/kubernetes-api/) modelados en el *chart* y cómo utilizarlo.
 
 ### Dependencias
 El *chart* tiene como dependencias los siguientes *charts*:
@@ -54,12 +54,12 @@ Por último, se utiliza la tecnología [Elastic Stack](https://www.elastic.co/es
 ### Valores
 El despliegue de la aplicación puede ser modificado en base al valor que se asignan a las variables del *chart* especificadas en el archivo [values.yaml](./chart/values.yaml). A continuación se explican cada uno de estos valores.
 
-- **environment**: es utilizado como *labels* para los distintos recursos de Kubernetes.
-- **pullPolicy**: política para la descarga de las imagenes Docker. Puede tomar los siguientes valores: IfNotPresent (se descarga la imagen solamente si ya no se encuentra de forma local), Always (siempre se descarga la imagen) y Never (nunca se descarga la imagen)
+- **environment**: es utilizado como *labels* para los distintos recursos de Kubernetes
+- **pullPolicy**: política para la descarga de las imágenes Docker. Puede tomar los siguientes valores: IfNotPresent (se descarga la imagen solamente si ya no se encuentra de forma local), Always (siempre se descarga la imagen) y Never (nunca se descarga la imagen)
 - **rollingUpdate.maxUnavailable**: la cantidad de pods que pueden no estar disponibles durante el proceso de actualización
 - **rollingUpdate.maxSurge**: la cantidad de pods que pueden ser creados por encima de la cantidad deseada de pods durante una actualización
 - **app.name**: es utilizado como *labels* para los distintos recursos de Kubernetes
-- **app.dnsName**: nombre DNS utilizado para acceder a la aplicación. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost). Si modifica este valor debe regenerar la imagen Docker del *backend*, ver sección [Imagenes Docker](#imagenes-docker)
+- **app.dnsName**: nombre DNS utilizado para acceder a la aplicación. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost). Si modifica este valor debe regenerar la imagen Docker del *backend*, ver sección [Aplicación](#aplicación) para más detalle.
 - **app.frontend.imageRepository**: nombre del repositorio desde el cual se obtiene la imagen del *frontend*
 - **app.frontend.imageTag**: versión de la imagen del *frontend*
 - **app.frontend.replicaCount**: número de replicas de *pods* a utilizar en el *frontend*
@@ -91,7 +91,7 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **service.frontend.externalPort**: puerto en el que se publica el servicio para el *frontend*
 - **service.backend.externalPort**: puerto en el que se publica el servicio para el *backend*
 - **monitoring.enabled**: habilitar/deshabilitar el monitoreo de la aplicación utilizando el Elastic Stack
-- **monitoring.dnsName**: nombre DNS utilizado para acceder a la solución de monitoreo. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost). Si modifica este valor debe regenerar la imagen Docker del *frontend*, ver sección [Imagenes Docker](#imagenes-docker)
+- **monitoring.dnsName**: nombre DNS utilizado para acceder a la solución de monitoreo. Debe configurar este nombre en su archivo hosts para resolver a una IP (por ejemplo a la localhost). Si modifica este valor debe regenerar la imagen Docker del *frontend*, ver sección [Aplicación](#aplicación) para más detalle.
 - **monitoring.elasticVersion**: versión del Elastic Stack a utilizar
 - **secret.database.mysql.rootPassword**: valor de la contraseña de root para la base de datos MYSQL. Debe estar codificado en Base 64 
 - **secret.database.mysql.userUsername**: valor del nombre de usuario para la base de datos MYSQL. Debe estar codificado en Base 64
@@ -100,7 +100,7 @@ El despliegue de la aplicación puede ser modificado en base al valor que se asi
 - **ingress-nginx.controller.podAnnotations**: anotaciónes que se asignan a los *pods* utilizados por el *ingress controller* NGINX. Son utilizado para que se pueda ingestar logs de acceso y logs de error de NGINX utilizando Filebeat
 - **eck-operator.installCRDs**: se deshabilita la instalación de los CRDs de Elastic por parte del operador ECK. La instalación de los CRDs es realizada directamente por el chart principal y no esta dependencia
 
-Tener en cuenta que si se modifican los valores asociados a los *liveness* y *readiness* *probes* de forma que se especifican pocos segundos, puede ocasionar que los contenedores no tengan tiempo suficiente para inicializar y de esta forma entren en un estado de falla.
+Tener en cuenta que si se modifican los valores asociados a los *liveness* y *readiness* *probes* de forma que se especifican pocos segundos, puede ocasionar que los contenedores no tengan tiempo suficiente para inicializar y de esta forma entren en un estado de falla constante.
 
 ### Instalación
 Para instalar el *chart* seguir los siguientes pasos:
@@ -159,16 +159,22 @@ Para acceder al monitoreo:
       Para visualizar los datos de la aplicación utilizar la URL https://kibana.polls.com/app/apm/services
       Para visualizar los logs de NGINX utilizar la URL https://kibana.polls.com/app/dashboards y buscar el dashboard "[Filebeat Nginx] Overview ECS"
 ```
-Tener en cuenta que la primera vez es necesario descargar las imagenes de los contenedores desde [Docker.hub](https://hub.docker.com/) lo cual puede llevar un tiempo considerable dependiendo de su conexión a internet.
+Tener en cuenta que la primera vez es necesario descargar las imágenes de los contenedores desde [Docker.hub](https://hub.docker.com/) lo cual puede llevar un tiempo considerable dependiendo de su conexión a internet.
 
 4. Configurar los nombres de dominio **app.polls.com** y **kibana.polls.com** en su archivo hosts.
 ```
 127.0.0.1 app.polls.com kibana.polls.com
 ```
 
-5. Ingresar a la aplicación con la siguiente URL: **http://app.polls.com**. En caso de habilitar el monitoreo acceder a Kibana con la URL: **https://kibana.polls.com**
+5. Ingresar a la aplicación con la siguiente URL: **http://app.polls.com**. 
 
-6. Una vez instalado el chart, debería obtener una salida similar al ejecutar el siguiente comando:
+6. En caso de habilitar el monitoreo acceder a Kibana con la URL: **https://kibana.polls.com**. Para la autenticación utilizar el nombre de usuario "elastic" y como contraseña utilizar el valor que obtiene al ejecutar el comando:
+
+```
+kubectl get secret polls-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
+```
+
+7. Una vez instalado el chart, debería obtener una salida similar al ejecutar el siguiente comando:
 
 ```
 $ kubectl get pods
@@ -187,7 +193,7 @@ polls-springboot-backend-8646fd94cf-8q4nj         1/1     Running   0           
 polls-springboot-backend-8646fd94cf-vl7k7         1/1     Running   0             18m
 ```
 
-Puede modifica los valores del archivo [values.yaml](./chart/values.yaml) para ajustar el despliegue de la aplicación.
+Puede modifica los valores del archivo [values.yaml](./chart/values.yaml) para ajustar el despliegue de la aplicación. Por ejemplo, en caso que cuente con recursos de *hardware* muy limitados puede utilizar una sola réplica para el *frontend* y *backend* y deshabilitar el monitoreo de la solución con Elastic Observability.
 
 ### Desinstalación
 Para desinstalar el *chart* seguir los siguientes pasos:
@@ -229,7 +235,7 @@ Se trata de una aplicación web que permite interactuar con encuestas. Los usuar
 
 El código fuente de la aplicación se encuentra versionado en este repositorio dado que se hicieron ajustes menores en su código fuente. El código original está disponible en el repositorio [spring-security-react-ant-design-polls-app](https://github.com/callicoder/spring-security-react-ant-design-polls-app/tree/master). A continuación se explican los cambios realizados.
 
-Para el *backend* se ajustó la propiedad **app.cors.allowedOrigins** del archivo [application.properties](./app/backend/src/main/resources/application.properties) para que su valor coincida con el valor **Values.app.dnsName** del *chart*. Si modifica dicho valor del *chart* entonces debe  ajustar esta propiedad del *backend* y renegerar la imagen Docker (ver sección [Imagenes Docker](#imagenes-docker) para más detalle de este proceso). Esta propiedad configura los origenes desde los que se permite realizar llamadas cruzadas, [*Cross-Origin Resource Sharing*](https://developer.mozilla.org/es/docs/Web/HTTP/CORS) (CORS).
+Para el *backend* se ajustó la propiedad **app.cors.allowedOrigins** del archivo [application.properties](./app/backend/src/main/resources/application.properties) para que su valor coincida con el valor **Values.app.dnsName** del *chart*. Si modifica dicho valor del *chart* entonces debe  ajustar esta propiedad del *backend* y regenerar la imagen Docker (ver sección [imágenes Docker](#imágenes-docker) para más detalle de este proceso). Esta propiedad configura los origenes desde los que se permite realizar llamadas cruzadas, [*Cross-Origin Resource Sharing*](https://developer.mozilla.org/es/docs/Web/HTTP/CORS) (CORS).
 
 Por otra parte, para el *frontend* se ajustó el archivo [index.js](./app/frontend/src/index.js) agregando las siguientes líneas de código:
 
@@ -242,9 +248,9 @@ const apm = initApm({
   serviceVersion: ''
 })
 ```
-El valor asignado a la propiedad **serverUrl** debe coincidir con el valor **Values.monitoring.dnsName** del *chart*. Si modifica dicho valor del *chart* entonces debe ajustar esta propiedad en el *frontend* y renegerar la imagen Docker (ver sección [Imagenes Docker](#imagenes-docker) para más detalle de este proceso). Estas líneas de codigo permiten monitorear el comportamiento del *frontend* a través de APM.
+El valor asignado a la propiedad **serverUrl** debe coincidir con el valor **Values.monitoring.dnsName** del *chart*. Si modifica dicho valor del *chart* entonces debe ajustar esta propiedad en el *frontend* y regenerar la imagen Docker (ver sección [imágenes Docker](#imágenes-docker) para más detalle de este proceso). Estas líneas de codigo permiten monitorear el comportamiento del *frontend* a través de APM.
 
-## Imagenes Docker
+## Imágenes Docker
 
 Por defecto se utilizan las imágens docker [polls-frontend](https://hub.docker.com/r/guilleguerrero/polls-frontend) y [polls-backend](https://hub.docker.com/r/guilleguerrero/polls-backend) publicadas en Docker Hub.
 
@@ -271,4 +277,4 @@ Como trabajo a futuro para mejorar el despliegue de la aplicación en Kubernetes
 - Hacer uso de un mecanismo de sincronización de la base de datos MySQL de forma que sea posible escalar horizontalmente el *statefulset* y de esta forma tener varias bases de datos que permitan atender a múltiples usuarios de la aplicación en los momentos de mayor carga. En este sentido se puede utilizar como guía la propia [documentación de Kubernetes](https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/) que plantea ejemplos para esto.
 - Se podría mejorar el despliegue del Elastic Stack haciendo uso de un clúster de Elasticsearch conformado por múltiples nodos, lo cual brinda resiliencia ante posibles fallas de los nodos.
 - Implementar un mecanismo de monitoreo sintético el cual permita identificar problemas de la aplicación. En este sentido Elastic Observability brinda funcionalidades que pueden ser de ayuda.
-- Solucionar el bug que presenta actualmente la aplicación que hace que un usuario al loguearse vea las encuestas de forma repetida.
+- Solucionar el *bug* que presenta actualmente la aplicación que hace que un usuario al iniciar sesión vea las encuestas de forma repetida.
